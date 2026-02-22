@@ -3,7 +3,7 @@
   "name": "Dawar Saada Maintenance Hub",
   "short_name": "DS Maintenance",
   "description": "Enterprise maintenance ticketing system for Dawar Saada branches.",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#f26722",
