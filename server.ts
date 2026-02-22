@@ -64,9 +64,18 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "development") {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  }
+
+  return app;
 }
 
-startServer();
+// Only start the server if not imported as a module (e.g., by Vercel)
+if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "development") {
+  startServer();
+} else {
+  module.exports = startServer();
+}
