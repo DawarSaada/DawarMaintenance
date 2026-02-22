@@ -1,0 +1,5 @@
+{
+  "name": "Dawar Saada Maintenance Ticketing System",
+  "description": "A comprehensive maintenance management system for Dawar Saada branches, featuring a multi-stage approval workflow from Branch Manager to Operations Manager and CEO.",
+  "requestFramePermissions": []
+}
