@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
         port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
         host: '0.0.0.0',
       },
+      base: '/', // Ensure base path is correct for Vercel deployment
       plugins: [],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
