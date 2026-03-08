@@ -8,6 +8,7 @@
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "rimraf dist-server && tsc -p tsconfig.server.json && tsc-alias -p tsconfig.server.json",
+    "lint": "tsc",
     "preview": "node dist-server/server.js",
     "start": "node dist-server/server.js"
   },

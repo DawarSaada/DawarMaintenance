@@ -106,12 +106,12 @@ const TicketDetail: React.FC<TicketDetailProps> = ({ ticket, user, branches, onU
                   <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">{ticket.title}</h1>
                   <div className="flex flex-wrap gap-6 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     <span className="flex items-center"><span className={`${lang === 'ar' ? 'ml-2' : 'mr-2'}`}>🏪</span> {branchName}</span>
-                    <span className="flex items-center"><span className={`${lang === 'ar' ? 'ml-2' : 'mr-2'}`}>⚖️</span> {ticket.priority}</span>
+                    <span className="flex items-center"><span className={`${lang === 'ar' ? 'ml-2' : 'mr-2'}`}>⚖️</span> {t[ticket.priority]}</span>
                     <span className="flex items-center"><span className={`${lang === 'ar' ? 'ml-2' : 'mr-2'}`}>👤</span> {ticket.createdBy}</span>
                   </div>
                 </div>
                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase border ${STATUS_MAP[ticket.status].color}`}>
-                  {STATUS_MAP[ticket.status].label}
+                  {t[ticket.status]}
                 </span>
               </div>
 
@@ -160,9 +160,9 @@ const TicketDetail: React.FC<TicketDetailProps> = ({ ticket, user, branches, onU
                           <div className="h-4 bg-white/10 rounded w-full"></div>
                         </div>
                       ) : aiError ? (
-                        <span className="text-slate-400 italic text-xs">AI Service Busy.</span>
+                        <span className="text-slate-400 italic text-xs">{lang === 'ar' ? 'خدمة الذكاء الاصطناعي مشغولة.' : 'AI Service Busy.'}</span>
                       ) : (
-                        aiData?.analysis || 'Analyzing...'
+                        aiData?.analysis || (lang === 'ar' ? 'جاري التحليل...' : 'Analyzing...')
                       )}
                     </div>
                   </div>
@@ -236,10 +236,10 @@ const TicketDetail: React.FC<TicketDetailProps> = ({ ticket, user, branches, onU
                   <p className="text-[11px] text-slate-400 font-medium uppercase tracking-tight">{t.ticketInitiated} {new Date(ticket.createdAt).toLocaleDateString()}</p>
                </div>
                {ticket.comments.map(c => (
-                 <div key={c.id} className="pl-6 ltr:border-l-2 rtl:pr-6 rtl:border-r-2 border-slate-100 dark:border-slate-800 relative">
-                    <p className="text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-wider">{c.author} ({c.role.replace('_', ' ')}) • {new Date(c.timestamp).toLocaleDateString()}</p>
+                  <div key={c.id} className="pl-6 ltr:border-l-2 rtl:pr-6 rtl:border-r-2 border-slate-100 dark:border-slate-800 relative">
+                    <p className="text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-wider">{c.author} ({t[c.role]}) • {new Date(c.timestamp).toLocaleDateString()}</p>
                     <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{c.text}</p>
-                 </div>
+                  </div>
                ))}
             </div>
           </div>

@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ user, notifications, currentTicketId, l
           </h2>
           <div className="flex items-center space-x-2 space-x-reverse md:hidden">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-              {user.role.replace('_', ' ')}
+              {t[user.role]}
             </span>
           </div>
         </div>
@@ -95,16 +95,16 @@ const Header: React.FC<HeaderProps> = ({ user, notifications, currentTicketId, l
           {showDropdown && (
             <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-4 w-72 md:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fadeInUp`}>
               <div className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <span className="font-black uppercase tracking-widest text-slate-800 dark:text-slate-100 text-[10px]">Updates</span>
+                <span className="font-black uppercase tracking-widest text-slate-800 dark:text-slate-100 text-[10px]">{lang === 'ar' ? 'التحديثات' : 'Updates'}</span>
                 {unreadCount > 0 && (
                   <button onClick={onMarkAllRead} className="text-orange-600 text-[10px] font-black uppercase hover:underline">
-                    Clear
+                    {lang === 'ar' ? 'مسح الكل' : 'Clear'}
                   </button>
                 )}
               </div>
               <div className="max-h-[70vh] overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400 text-xs italic font-medium">No recent activity.</div>
+                  <div className="p-12 text-center text-slate-400 text-xs italic font-medium">{lang === 'ar' ? 'لا توجد أنشطة مؤخراً.' : 'No recent activity.'}</div>
                 ) : (
                   notifications.slice(0, 15).map((n) => (
                     <div key={n.id} className={`p-5 border-b border-slate-50 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer ${!n.read ? 'bg-orange-50/20 dark:bg-orange-900/10' : ''}`}>
@@ -125,7 +125,7 @@ const Header: React.FC<HeaderProps> = ({ user, notifications, currentTicketId, l
         <div className="hidden md:flex flex-col text-right ltr:text-right rtl:text-left">
           <span className="text-slate-800 dark:text-slate-100 font-bold text-sm truncate max-w-[150px]">{user.name}</span>
           <span className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-[0.15em]">
-            {user.role.replace('_', ' ')}
+            {t[user.role]}
           </span>
         </div>
       </div>

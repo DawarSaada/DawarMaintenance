@@ -89,7 +89,7 @@ const BranchManagement: React.FC<BranchManagementProps> = ({ branches, onAddBran
             </div>
           ))}
           {branches.length === 0 && (
-            <div className="p-20 text-center text-slate-400 italic">No branches configured.</div>
+            <div className="p-20 text-center text-slate-400 italic">{lang === 'ar' ? 'لا توجد فروع مضافة.' : 'No branches configured.'}</div>
           )}
         </div>
       </div>

@@ -79,7 +79,39 @@ export const translations = {
     step2: "OM & CEO Review",
     step3: "Resolution Stage",
     step4: "Final Verification",
-    step5: "Ticket Closed"
+    step5: "Ticket Closed",
+    // Roles
+    BRANCH_MANAGER: "Branch Manager",
+    OPERATION_MANAGER: "Operations Manager",
+    CEO: "CEO",
+    // Statuses
+    PENDING_OM_REVIEW: "Pending OM Review",
+    PENDING_CEO_APPROVAL: "Pending CEO Approval",
+    CEO_REJECTED: "CEO Rejected",
+    OM_REJECTED: "OM Rejected",
+    APPROVED_PENDING_RESOLUTION: "Approved (To Resolve)",
+    IN_PROGRESS: "In Progress",
+    RESOLVED_PENDING_VERIFICATION: "Resolved (Review)",
+    CLOSED: "Closed",
+    RE_ISSUED: "Re-issued",
+    // Priorities
+    LOW: "Low",
+    MEDIUM: "Medium",
+    HIGH: "High",
+    URGENT: "Urgent",
+    // Notifications
+    deleteSuccess: "Successfully deleted ticket(s).",
+    deleteError: "Error: Failed to delete some tickets.",
+    subscribeSuccess: "Successfully subscribed to push notifications!",
+    subscribeError: "Failed to subscribe to push notifications.",
+    ticketInitiatedMsg: "Ticket initiated.",
+    ticketUpdatedMsg: "Ticket updated.",
+    cannotDeleteSelf: "You cannot delete your own account.",
+    userDeleted: "User account deleted.",
+    userDeleteError: "Error: System failed to delete user account.",
+    branchDeleted: "Branch deleted.",
+    branchDeleteError: "Error: System failed to delete branch.",
+    loggedOut: "Logged out successfully."
   },
   ar: {
     appName: "دوار السعادة",
@@ -160,6 +192,38 @@ export const translations = {
     step2: "مراجعة الإدارة",
     step3: "مرحلة الحل",
     step4: "التحقق النهائي",
-    step5: "مغلق"
+    step5: "مغلق",
+    // Roles
+    BRANCH_MANAGER: "مدير الفرع",
+    OPERATION_MANAGER: "مدير العمليات",
+    CEO: "المدير التنفيذي",
+    // Statuses
+    PENDING_OM_REVIEW: "في انتظار مراجعة العمليات",
+    PENDING_CEO_APPROVAL: "في انتظار موافقة المدير التنفيذي",
+    CEO_REJECTED: "تم الرفض من المدير التنفيذي",
+    OM_REJECTED: "تم الرفض من العمليات",
+    APPROVED_PENDING_RESOLUTION: "معتمد (للحل)",
+    IN_PROGRESS: "قيد التنفيذ",
+    RESOLVED_PENDING_VERIFICATION: "تم الحل (للمراجعة)",
+    CLOSED: "مغلق",
+    RE_ISSUED: "معاد إصداره",
+    // Priorities
+    LOW: "منخفض",
+    MEDIUM: "متوسط",
+    HIGH: "عالي",
+    URGENT: "عاجل",
+    // Notifications
+    deleteSuccess: "تم حذف التذاكر بنجاح.",
+    deleteError: "خطأ: فشل في حذف بعض التذاكر.",
+    subscribeSuccess: "تم الاشتراك في التنبيهات بنجاح!",
+    subscribeError: "فشل في الاشتراك في التنبيهات.",
+    ticketInitiatedMsg: "تم بدء التذكرة.",
+    ticketUpdatedMsg: "تم تحديث التذكرة.",
+    cannotDeleteSelf: "لا يمكنك حذف حسابك الخاص.",
+    userDeleted: "تم حذف حساب المستخدم.",
+    userDeleteError: "خطأ: فشل النظام في حذف حساب المستخدم.",
+    branchDeleted: "تم حذف الفرع.",
+    branchDeleteError: "خطأ: فشل النظام في حذف الفرع.",
+    loggedOut: "تم تسجيل الخروج بنجاح."
   }
 };

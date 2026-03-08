@@ -193,14 +193,14 @@ const App: React.FC = () => {
     if (!ids.length) return;
     try {
       await Promise.all(ids.map(id => deleteDoc(doc(db, "tickets", id))));
-      addNotification(`Successfully deleted ${ids.length} ticket(s).`, 'warning');
+      addNotification(`${t.deleteSuccess} (${ids.length})`, 'warning');
       if (selectedTicketId && ids.includes(selectedTicketId)) {
         setSelectedTicketId(null);
         setView('tickets');
       }
     } catch (error) {
       console.error("Bulk ticket deletion failed:", error);
-      addNotification("Error: Failed to delete some tickets.", 'error');
+      addNotification(t.deleteError, 'error');
     }
   };
 
@@ -261,10 +261,10 @@ const App: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscription),
       });
-      addNotification('Successfully subscribed to push notifications!', 'success');
+      addNotification(t.subscribeSuccess, 'success');
     } catch (error) {
       console.error('Failed to subscribe to push notifications:', error);
-      addNotification('Failed to subscribe to push notifications.', 'error');
+      addNotification(t.subscribeError, 'error');
     }
   }, [vapidPublicKey, addNotification]);
 
@@ -305,7 +305,7 @@ const App: React.FC = () => {
     };
     await setDoc(doc(db, "tickets", id), newTicket);
     setView('tickets');
-    addNotification(`Ticket ${id} initiated.`, 'info', id);
+    addNotification(`${t.ticketInitiatedMsg} (${id})`, 'info', id);
   };
 
   const updateTicketStatus = async (ticketId: string, newStatus: TicketStatus, comment?: string) => {
@@ -327,30 +327,30 @@ const App: React.FC = () => {
       updatedAt: Date.now(),
       comments: newComments
     });
-    addNotification(`Ticket ${ticketId} updated.`, 'info', ticketId);
+    addNotification(`${t.ticketUpdatedMsg} (${ticketId})`, 'info', ticketId);
   };
 
   const deleteUser = async (id: string) => {
     if (id === currentUser?.id) {
-      addNotification("You cannot delete your own account.", "error");
+      addNotification(t.cannotDeleteSelf, "error");
       return;
     }
     try {
       await deleteDoc(doc(db, "accounts", id));
-      addNotification(`User account deleted: ${id}`, "warning");
+      addNotification(`${t.userDeleted}: ${id}`, "warning");
     } catch (error) {
       console.error("User deletion failed:", error);
-      addNotification("Error: System failed to delete user account.", "error");
+      addNotification(t.userDeleteError, "error");
     }
   };
 
   const deleteBranch = async (nameEn: string) => {
     try {
       await deleteDoc(doc(db, "branches", nameEn));
-      addNotification(`Branch deleted: ${nameEn}`, "warning");
+      addNotification(`${t.branchDeleted}: ${nameEn}`, "warning");
     } catch (error) {
       console.error("Branch deletion failed:", error);
-      addNotification("Error: System failed to delete branch.", "error");
+      addNotification(t.branchDeleteError, "error");
     }
   };
 

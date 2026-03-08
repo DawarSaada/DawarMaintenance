@@ -87,10 +87,10 @@ const TicketForm: React.FC<TicketFormProps> = ({ branches, user, onSubmit, onCan
             <div className="space-y-1">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mx-1">{t.priorityLevel}</label>
               <select className={inputClasses} value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value as Priority})}>
-                <option value={Priority.LOW}>Low</option>
-                <option value={Priority.MEDIUM}>Medium</option>
-                <option value={Priority.HIGH}>High</option>
-                <option value={Priority.URGENT}>Urgent</option>
+                <option value={Priority.LOW}>{t.LOW}</option>
+                <option value={Priority.MEDIUM}>{t.MEDIUM}</option>
+                <option value={Priority.HIGH}>{t.HIGH}</option>
+                <option value={Priority.URGENT}>{t.URGENT}</option>
               </select>
             </div>
           </div>

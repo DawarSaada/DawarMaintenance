@@ -71,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tickets, user, onSelectTicket, t 
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">{ticket.branch}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${STATUS_MAP[ticket.status].color}`}>
-                      {STATUS_MAP[ticket.status].label}
+                      {t[ticket.status]}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right rtl:text-left">

@@ -84,7 +84,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
               value={formData.id}
               onChange={e => setFormData({...formData, id: e.target.value})}
             />
-            {editingUserId && <p className="text-[10px] text-orange-500 font-bold uppercase">Primary Key - Cannot be modified</p>}
+            {editingUserId && <p className="text-[10px] text-orange-500 font-bold uppercase">{lang === 'ar' ? 'المعرف الأساسي - لا يمكن تعديله' : 'Primary Key - Cannot be modified'}</p>}
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t.fullName}</label>
@@ -92,7 +92,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
               required
               type="text"
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-medium text-slate-900 dark:text-white"
-              placeholder="e.g. John Doe"
+              placeholder={lang === 'ar' ? 'مثال: أحمد محمد' : 'e.g. John Doe'}
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
             />
@@ -104,9 +104,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
               value={formData.role}
               onChange={e => setFormData({...formData, role: e.target.value as UserRole})}
             >
-              <option value={UserRole.BRANCH_MANAGER}>Branch Manager</option>
-              <option value={UserRole.OPERATION_MANAGER}>Operation Manager</option>
-              <option value={UserRole.CEO}>CEO</option>
+              <option value={UserRole.BRANCH_MANAGER}>{t.BRANCH_MANAGER}</option>
+              <option value={UserRole.OPERATION_MANAGER}>{t.OPERATION_MANAGER}</option>
+              <option value={UserRole.CEO}>{t.CEO}</option>
             </select>
           </div>
           <div className="space-y-2">
@@ -165,14 +165,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
                   <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100">{account.name}</td>
                   <td className="px-6 py-4">
                     <span className="text-xs font-bold text-slate-400 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md">
-                      {account.role.replace('_', ' ')}
+                      {t[account.role]}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm">{branchDisplay}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center text-emerald-500 text-xs font-bold">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 ml-2"></span>
-                      ACTIVE
+                      {lang === 'ar' ? 'نشط' : 'ACTIVE'}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right rtl:text-left">

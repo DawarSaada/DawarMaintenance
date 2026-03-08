@@ -1,4 +1,9 @@
 import express from "express";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import { createServer as createViteServer } from "vite";
 import webpush from 'web-push';
 import bodyParser from 'body-parser';
@@ -52,7 +57,11 @@ async function startServer() {
 
   // Serve static files in production
   if (process.env.NODE_ENV === "production") {
-    app.use(express.static('dist'));
+    app.use(express.static(join(__dirname, '../dist')));
+    // For any other route, serve the index.html (SPA fallback)
+    app.get('*', (req, res) => {
+      res.sendFile(join(__dirname, '../dist', 'index.html'));
+    });
   }
 
   // Vite middleware for development
@@ -74,8 +83,14 @@ async function startServer() {
 }
 
 // Only start the server if not imported as a module (e.g., by Vercel)
+let appInstance: express.Application | undefined;
+
 if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "development") {
-  startServer();
+  startServer().then(app => { appInstance = app; });
 } else {
-  module.exports = startServer();
+  // For Vercel, export the app instance as an ES Module
+  // Vercel expects an exported handler, and `startServer` returns the app.
+  // We need to await it before exporting.
+  // @ts-ignore: This is a Vercel-specific export pattern
+  export default await startServer();
 }

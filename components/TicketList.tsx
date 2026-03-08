@@ -76,7 +76,7 @@ const TicketList: React.FC<TicketListProps> = ({ tickets, user, onSelectTicket, 
                 </div>
               </div>
               <div className="flex items-center space-x-4 space-x-reverse">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_MAP[ticket.status].color}`}>{STATUS_MAP[ticket.status].label}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_MAP[ticket.status].color}`}>{t[ticket.status]}</span>
                 <span className="text-slate-300 dark:text-slate-600">➡️</span>
               </div>
             </div>

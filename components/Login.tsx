@@ -22,7 +22,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, lang, onSetLang, theme, onSetThe
     setError('');
     const success = onLogin(id, pass, stayLoggedIn);
     if (!success) {
-      setError('Invalid User ID or Password');
+      setError(lang === 'ar' ? 'معرف المستخدم أو كلمة المرور غير صحيحة' : 'Invalid User ID or Password');
     }
   };
 
