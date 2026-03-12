@@ -1,4 +1,4 @@
-import React, { useEffect } from 'https://esm.sh/react@19.0.0';
+import React, { useEffect } from 'react';
 import { AppNotification } from '../types.ts';
 
 interface ToastProps {

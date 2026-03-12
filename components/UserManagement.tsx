@@ -1,5 +1,5 @@
 
-import React, { useState } from 'https://esm.sh/react@19.0.0';
+import React, { useState } from 'react';
 import { UserAccount, UserRole, Language } from '../types.ts';
 
 interface UserManagementProps {
@@ -23,6 +23,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
     branch: branches[0]?.name_en || ''
   });
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   const startEdit = (account: UserAccount) => {
     setFormData(account);
     setEditingUserId(account.id);
@@ -30,8 +32,12 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm(`${t.delete}? ID: ${id}`)) {
+    if (deleteConfirmId === id) {
       onDeleteUser(id);
+      setDeleteConfirmId(null);
+    } else {
+      setDeleteConfirmId(id);
+      setTimeout(() => setDeleteConfirmId(null), 3000);
     }
   };
 
@@ -185,9 +191,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ accounts, branches, onA
                       </button>
                       <button 
                         onClick={() => handleDelete(account.id)}
-                        className="text-red-500 hover:text-red-700 font-bold text-sm underline opacity-0 group-hover:opacity-100 transition-opacity"
+                        className={`${deleteConfirmId === account.id ? 'text-white bg-red-600 px-2 py-0.5 rounded-md no-underline' : 'text-red-500 underline'} hover:text-red-700 font-bold text-sm opacity-0 group-hover:opacity-100 transition-all`}
                       >
-                        {t.delete}
+                        {deleteConfirmId === account.id ? t.confirm : t.delete}
                       </button>
                     </div>
                   </td>

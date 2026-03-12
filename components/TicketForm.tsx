@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'https://esm.sh/react@19.0.0';
+import React, { useState, useRef, useEffect } from 'react';
 import { Priority, Ticket, User, UserRole, Language } from '../types.ts';
 
 interface TicketFormProps {

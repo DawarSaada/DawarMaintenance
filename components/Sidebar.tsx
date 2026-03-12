@@ -1,5 +1,5 @@
 
-import React from 'https://esm.sh/react@19.0.0';
+import React from 'react';
 import { UserRole, Language } from '../types.ts';
 
 interface SidebarProps {
@@ -67,6 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, role, onLogout,
           <NavItem id="dashboard" label={t.dashboard} icon="📊" />
           <NavItem id="tickets" label={t.allTickets} icon="🎫" />
           <NavItem id="create" label={t.newTicket} icon="➕" />
+          <NavItem id="notifications" label={lang === 'ar' ? 'التنبيهات' : 'Notifications'} icon="🔔" />
           {role === UserRole.OPERATION_MANAGER && (
             <NavItem id="admin" label={t.adminSettings} icon="⚙️" />
           )}

@@ -14,15 +14,15 @@ async function startServer() {
 
   app.use(bodyParser.json());
 
-  // VAPID keys generation (for demonstration, store securely in production)
-  const vapidKeys = webpush.generateVAPIDKeys();
-  console.log('VAPID Public Key:', vapidKeys.publicKey);
-  console.log('VAPID Private Key:', vapidKeys.privateKey);
+  // VAPID keys
+  const publicVapidKey = process.env.VAPID_PUBLIC_KEY || 'BBQlCknLDMoHmHNNvJkuICi8FMxVUTE4ibFwd0PlRPU2JIWxdrHCzXblNBxOTVuItwfmQn9H9j2KI6tslkdLNc0';
+  const privateVapidKey = process.env.VAPID_PRIVATE_KEY || 'KRwpt6dW9vOFtE3IuviB3DGoGxKiWOKrCzn8eydaSg4';
+  const vapidEmail = process.env.VAPID_EMAIL || 'mailto:admin@dawarsaada.com';
 
   webpush.setVapidDetails(
-    'mailto:example@example.com',
-    vapidKeys.publicKey,
-    vapidKeys.privateKey
+    vapidEmail,
+    publicVapidKey,
+    privateVapidKey
   );
 
   const subscriptions: webpush.PushSubscription[] = [];
@@ -33,7 +33,7 @@ async function startServer() {
   });
 
   app.get('/api/push/vapid-key', (req, res) => {
-    res.json({ publicKey: vapidKeys.publicKey });
+    res.json({ publicKey: publicVapidKey });
   });
 
   app.post('/api/push/subscribe', (req, res) => {

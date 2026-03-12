@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'https://esm.sh/react@19.0.0';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, AppNotification, Language, Theme } from '../types.ts';
 
 interface HeaderProps {
@@ -10,7 +10,7 @@ interface HeaderProps {
   theme: Theme;
   onSetLang: (l: Language) => void;
   onSetTheme: (t: Theme) => void;
-  onMarkRead: (id: string) => void;
+  onMarkRead: (notif: AppNotification) => void;
   onMarkAllRead: () => void;
   t: any;
   onMenuClick: () => void;
@@ -107,7 +107,14 @@ const Header: React.FC<HeaderProps> = ({ user, notifications, currentTicketId, l
                   <div className="p-12 text-center text-slate-400 text-xs italic font-medium">{lang === 'ar' ? 'لا توجد أنشطة مؤخراً.' : 'No recent activity.'}</div>
                 ) : (
                   notifications.slice(0, 15).map((n) => (
-                    <div key={n.id} className={`p-5 border-b border-slate-50 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer ${!n.read ? 'bg-orange-50/20 dark:bg-orange-900/10' : ''}`}>
+                    <div 
+                      key={n.id} 
+                      onClick={() => {
+                        onMarkRead(n);
+                        setShowDropdown(false);
+                      }}
+                      className={`p-5 border-b border-slate-50 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer ${!n.read ? 'bg-orange-50/20 dark:bg-orange-900/10' : ''}`}
+                    >
                       <p className={`text-xs leading-relaxed ${!n.read ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400 font-medium'}`}>
                         {n.message}
                       </p>

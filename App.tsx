@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'https://esm.sh/react@19.0.0';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   collection, 
   onSnapshot, 
@@ -13,7 +13,7 @@ import {
   setDoc,
   getDocs,
   FirestoreError
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+} from 'firebase/firestore';
 
 import { db } from './firebase.ts';
 import { UserRole, Ticket, TicketStatus, User, Priority, UserAccount, AppNotification, Language, Theme } from './types.ts';
@@ -73,14 +73,29 @@ const App: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [branches, setBranches] = useState<{name_en: string, name_ar: string}[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [view, setView] = useState<'dashboard' | 'tickets' | 'create' | 'detail' | 'admin'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'tickets' | 'create' | 'detail' | 'admin' | 'notifications'>('dashboard');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [vapidPublicKey, setVapidPublicKey] = useState<string | null>(null);
   
   // App Preferences
-  const [lang, setLang] = useState<Language>('en');
-  const [theme, setTheme] = useState<Theme>('light');
+  const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ds_lang') as Language) || 'en');
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('ds_theme') as Theme) || 'light');
+
+  useEffect(() => {
+    localStorage.setItem('ds_lang', lang);
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  useEffect(() => {
+    localStorage.setItem('ds_theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
@@ -254,6 +269,18 @@ const App: React.FC = () => {
     };
   }, [db, currentUser]);
 
+  // Handle deep linking for tickets
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ticketId = params.get('ticket');
+    if (ticketId && currentUser) {
+      setSelectedTicketId(ticketId);
+      setView('detail');
+      // Clear the param without refreshing
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [currentUser]);
+
   const addNotification = useCallback(async (message: string, type: AppNotification['type'] = 'info', ticketId?: string) => {
     await addDoc(collection(db, "notifications"), {
       message,
@@ -262,7 +289,22 @@ const App: React.FC = () => {
       read: false,
       ticketId: ticketId || null
     });
-  }, []);
+
+    // Send push notification via server
+    try {
+      await fetch('/api/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Dawar Saada Maintenance',
+          body: message,
+          url: ticketId ? `${window.location.origin}/?ticket=${ticketId}` : window.location.origin
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to send push notification:', e);
+    }
+  }, [db]);
 
   const deleteTickets = async (ids: string[]) => {
     if (!ids.length) return;
@@ -360,7 +402,7 @@ const App: React.FC = () => {
   const logout = useCallback(() => {
     setCurrentUser(null);
     localStorage.removeItem(SESSION_KEY);
-    setView('login');
+    setView('dashboard');
     addNotification(t.loggedOut, 'info');
   }, [addNotification, t.loggedOut]);
 
@@ -464,6 +506,16 @@ const App: React.FC = () => {
     );
   }
 
+  const handleNotificationClick = async (notif: AppNotification) => {
+    if (!notif.read) {
+      await updateDoc(doc(db, "notifications", notif.id), { read: true });
+    }
+    if (notif.ticketId) {
+      setSelectedTicketId(notif.ticketId);
+      setView('detail');
+    }
+  };
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
       {showInstallBanner && (
@@ -498,9 +550,10 @@ const App: React.FC = () => {
           theme={theme}
           onSetLang={setLang}
           onSetTheme={setTheme}
-          onMarkRead={async (id) => await updateDoc(doc(db, "notifications", id), { read: true })}
+          onMarkRead={handleNotificationClick}
           onMarkAllRead={async () => {
-            notifications.filter(n => !n.read).forEach(n => updateDoc(doc(db, "notifications", n.id), { read: true }));
+            const unread = notifications.filter(n => !n.read);
+            await Promise.all(unread.map(n => updateDoc(doc(db, "notifications", n.id), { read: true })));
           }}
           t={t}
           onMenuClick={() => setSidebarOpen(true)}
@@ -556,6 +609,49 @@ const App: React.FC = () => {
               t={t}
               lang={lang}
             />
+          )}
+          {view === 'notifications' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{lang === 'ar' ? 'التنبيهات' : 'Notifications'}</h2>
+                <button 
+                  onClick={async () => {
+                    const unread = notifications.filter(n => !n.read);
+                    await Promise.all(unread.map(n => updateDoc(doc(db, "notifications", n.id), { read: true })));
+                  }}
+                  className="text-orange-600 text-sm font-bold uppercase hover:underline"
+                >
+                  {lang === 'ar' ? 'تحديد الكل كمقروء' : 'Mark all as read'}
+                </button>
+              </div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                {notifications.length === 0 ? (
+                  <div className="p-12 text-center text-slate-400 italic">{lang === 'ar' ? 'لا توجد تنبيهات.' : 'No notifications yet.'}</div>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {notifications.map(n => (
+                      <div 
+                        key={n.id} 
+                        onClick={() => handleNotificationClick(n)}
+                        className={`p-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-start space-x-4 space-x-reverse ${!n.read ? 'bg-orange-50/20 dark:bg-orange-900/10 border-l-4 border-orange-500' : ''}`}
+                      >
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${n.type === 'error' ? 'bg-red-100 text-red-600' : n.type === 'warning' ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
+                          {n.type === 'error' ? '⚠️' : n.type === 'warning' ? '🔔' : 'ℹ️'}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`text-sm ${!n.read ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400'}`}>
+                            {n.message}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-wider">
+                            {new Date(n.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </main>
       </div>

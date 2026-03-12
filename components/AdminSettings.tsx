@@ -1,4 +1,4 @@
-import React, { useState } from 'https://esm.sh/react@19.0.0';
+import React, { useState } from 'react';
 import { UserAccount, UserRole, Language } from '../types.ts';
 import UserManagement from './UserManagement.tsx';
 import BranchManagement from './BranchManagement.tsx';

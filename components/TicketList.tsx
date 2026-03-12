@@ -1,5 +1,5 @@
 
-import React, { useState } from 'https://esm.sh/react@19.0.0';
+import React, { useState } from 'react';
 import { Ticket, User, UserRole, Priority, TicketStatus } from '../types.ts';
 import { STATUS_MAP, PRIORITY_MAP } from '../constants.ts';
 

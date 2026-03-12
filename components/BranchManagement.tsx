@@ -1,5 +1,5 @@
 
-import React, { useState } from 'https://esm.sh/react@19.0.0';
+import React, { useState } from 'react';
 import { Language } from '../types.ts';
 
 interface BranchManagementProps {
@@ -13,6 +13,7 @@ interface BranchManagementProps {
 const BranchManagement: React.FC<BranchManagementProps> = ({ branches, onAddBranch, onDeleteBranch, t, lang }) => {
   const [newBranchEn, setNewBranchEn] = useState('');
   const [newBranchAr, setNewBranchAr] = useState('');
+  const [deleteConfirmName, setDeleteConfirmName] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,9 +25,12 @@ const BranchManagement: React.FC<BranchManagementProps> = ({ branches, onAddBran
   };
 
   const handleDelete = (nameEn: string) => {
-    const confirmation = window.confirm(`${t.delete}? ${nameEn}`);
-    if (confirmation) {
+    if (deleteConfirmName === nameEn) {
       onDeleteBranch(nameEn);
+      setDeleteConfirmName(null);
+    } else {
+      setDeleteConfirmName(nameEn);
+      setTimeout(() => setDeleteConfirmName(null), 3000);
     }
   };
 
@@ -82,9 +86,10 @@ const BranchManagement: React.FC<BranchManagementProps> = ({ branches, onAddBran
               </div>
               <button 
                 onClick={() => handleDelete(branch.name_en)}
-                className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity text-sm font-bold flex items-center"
+                className={`${deleteConfirmName === branch.name_en ? 'bg-red-600 text-white px-3 py-1 rounded-xl' : 'text-red-500'} hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all text-sm font-bold flex items-center`}
               >
-                <span className="mr-2">🗑️</span> {t.delete}
+                <span className={deleteConfirmName === branch.name_en ? 'hidden' : 'mr-2'}>🗑️</span> 
+                {deleteConfirmName === branch.name_en ? t.confirm : t.delete}
               </button>
             </div>
           ))}

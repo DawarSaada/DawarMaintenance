@@ -1,5 +1,5 @@
 
-import React from 'https://esm.sh/react@19.0.0';
+import React from 'react';
 import { Ticket, User, TicketStatus, UserRole } from '../types.ts';
 import { STATUS_MAP } from '../constants.ts';
 

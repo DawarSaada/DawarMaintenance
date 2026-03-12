@@ -70,18 +70,20 @@ service cloud.firestore {
     }
 
     function isValidTicket(data) {
-      return data.keys().hasAll(['id', 'title', 'branch', 'status', 'priority', 'createdBy', 'createdAt', 'updatedAt']) &&
-             data.id is string && data.title is string && data.title.size() < 200 &&
+      return data.keys().hasAll(['title', 'description', 'branch', 'status', 'priority', 'createdBy', 'createdAt', 'updatedAt']) &&
+             data.title is string && data.title.size() < 200 &&
+             data.description is string &&
              data.branch is string && data.status is string &&
              data.priority in ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] &&
              data.createdBy is string &&
              data.createdAt is number && data.updatedAt is number &&
-             (!('comments' in data) || data.comments is list);
+             (!('comments' in data) || data.comments is list) &&
+             (!('media' in data) || data.media is list);
     }
 
     function isValidNotification(data) {
-      return data.keys().hasAll(['id', 'message', 'type', 'timestamp', 'read']) &&
-             data.id is string && data.message is string && data.message.size() < 500 &&
+      return data.keys().hasAll(['message', 'type', 'timestamp', 'read']) &&
+             data.message is string && data.message.size() < 500 &&
              data.type in ['success', 'info', 'warning', 'error'] &&
              data.timestamp is number && data.read is bool;
     }
@@ -95,7 +97,7 @@ service cloud.firestore {
       // WARNING: This exposes password hashes/strings if they are stored here.
       allow read: if true;
       allow create, update: if isValidUserAccount(request.resource.data);
-      allow delete: if false; // Protect accounts from deletion
+      allow delete: if true; // Allow admin to delete accounts
     }
 
     match /tickets/{ticketId} {

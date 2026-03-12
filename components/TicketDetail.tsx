@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'https://esm.sh/react@19.0.0';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Ticket, User, TicketStatus, UserRole, Priority, Language } from '../types.ts';
 import { STATUS_MAP } from '../constants.ts';
 import { getAiMaintenanceInsights, MaintenanceInsights } from '../services/geminiService.ts';

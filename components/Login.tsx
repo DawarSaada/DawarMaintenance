@@ -1,5 +1,5 @@
 
-import React, { useState } from 'https://esm.sh/react@19.0.0';
+import React, { useState } from 'react';
 import { Language, Theme } from '../types.ts';
 
 interface LoginProps {
