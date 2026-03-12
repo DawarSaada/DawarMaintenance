@@ -82,15 +82,6 @@ async function startServer() {
   return app;
 }
 
-// Only start the server if not imported as a module (e.g., by Vercel)
-let appInstance: express.Application | undefined;
-
-if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "development") {
-  startServer().then(app => { appInstance = app; });
-} else {
-  // For Vercel, export the app instance as an ES Module
-  // Vercel expects an exported handler, and `startServer` returns the app.
-  // We need to await it before exporting.
-  // @ts-ignore: This is a Vercel-specific export pattern
-  export default await startServer();
-}
+// Start the server and export for Vercel
+const app = await startServer();
+export default app;

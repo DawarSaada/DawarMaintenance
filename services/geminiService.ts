@@ -1,6 +1,14 @@
 import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@1.3.0";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: any = null;
+
+const getAi = () => {
+  if (!ai) {
+    const apiKey = process.env.API_KEY || '';
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 export interface MaintenanceInsights {
   analysis: string;
@@ -9,7 +17,8 @@ export interface MaintenanceInsights {
 
 export const getAiMaintenanceInsights = async (title: string, description: string): Promise<MaintenanceInsights | null> => {
   try {
-    const response = await ai.models.generateContent({
+    const aiInstance = getAi();
+    const response = await aiInstance.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Maintenance Issue Title: ${title}\nDescription: ${description}`,
       config: {

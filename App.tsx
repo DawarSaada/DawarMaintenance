@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'https://esm.sh/react@19.0.0';
-import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 import { 
-  getFirestore, 
   collection, 
   onSnapshot, 
   addDoc, 
@@ -13,9 +11,11 @@ import {
   orderBy, 
   limit, 
   setDoc,
-  getDocs
+  getDocs,
+  FirestoreError
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
+import { db } from './firebase.ts';
 import { UserRole, Ticket, TicketStatus, User, Priority, UserAccount, AppNotification, Language, Theme } from './types.ts';
 import { translations } from './translations.ts';
 import Sidebar from './components/Sidebar.tsx';
@@ -31,17 +31,41 @@ import Toast from './components/Toast.tsx';
 const SESSION_KEY = 'ds_session_data';
 const PREFS_KEY = 'ds_user_prefs';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAnu5kR7MFZQeVGLs5AuxqDts5yyKuCzWo",
-  authDomain: "dawarsiyana.firebaseapp.com",
-  projectId: "dawarsiyana",
-  storageBucket: "dawarsiyana.firebasestorage.app",
-  messagingSenderId: "128940429267",
-  appId: "1:128940429267:web:5670369e87dd30fa25e926"
-};
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+  }
+}
+
+const handleFirestoreError = (error: any, operationType: OperationType, path: string | null) => {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: undefined, // Not using Firebase Auth in this custom login system yet
+      email: undefined,
+      emailVerified: undefined,
+      isAnonymous: undefined,
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+};
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -57,8 +81,45 @@ const App: React.FC = () => {
   // App Preferences
   const [lang, setLang] = useState<Language>('en');
   const [theme, setTheme] = useState<Theme>('light');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   const t = translations[lang];
+
+  // PWA Install Prompt Logic
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Check if already installed or on iOS
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    
+    if (isIos && !isStandalone) {
+      setShowInstallBanner(true);
+    }
+
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        setShowInstallBanner(false);
+      }
+    } else {
+      // iOS instructions
+      alert(lang === 'ar' ? 'لتثبيت التطبيق على جهازك، اضغط على أيقونة "مشاركة" ثم اختر "إضافة إلى الشاشة الرئيسية".' : 'To install this app on your device, tap the "Share" icon and then select "Add to Home Screen".');
+    }
+  };
 
   // Initialize Preferences
   useEffect(() => {
@@ -127,15 +188,9 @@ const App: React.FC = () => {
     fetchVapidKey();
   }, []);
 
-  // Real-time Data Listeners
+  // Account Listener (Unauthenticated)
   useEffect(() => {
     if (!db) return;
-
-    const unsubscribeTickets = onSnapshot(query(collection(db, "tickets"), orderBy("createdAt", "desc")), (snapshot) => {
-      const ticketsData: Ticket[] = [];
-      snapshot.forEach((doc) => ticketsData.push({ ...doc.data(), id: doc.id } as Ticket));
-      setTickets(ticketsData);
-    });
 
     const unsubscribeAccounts = onSnapshot(collection(db, "accounts"), (snapshot) => {
       const accountsData: UserAccount[] = [];
@@ -151,6 +206,23 @@ const App: React.FC = () => {
         initialAccounts.forEach(acc => setDoc(doc(db, "accounts", acc.id), acc));
       }
       setAccounts(accountsData);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, "accounts");
+    });
+
+    return () => unsubscribeAccounts();
+  }, [db]);
+
+  // Real-time Data Listeners (Authenticated)
+  useEffect(() => {
+    if (!db || !currentUser) return;
+
+    const unsubscribeTickets = onSnapshot(query(collection(db, "tickets"), orderBy("createdAt", "desc")), (snapshot) => {
+      const ticketsData: Ticket[] = [];
+      snapshot.forEach((doc) => ticketsData.push({ ...doc.data(), id: doc.id } as Ticket));
+      setTickets(ticketsData);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, "tickets");
     });
 
     const unsubscribeBranches = onSnapshot(collection(db, "branches"), (snapshot) => {
@@ -163,21 +235,24 @@ const App: React.FC = () => {
         });
       });
       setBranches(branchesData.sort((a, b) => a.name_en.localeCompare(b.name_en)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, "branches");
     });
 
     const unsubscribeNotifs = onSnapshot(query(collection(db, "notifications"), orderBy("timestamp", "desc"), limit(20)), (snapshot) => {
       const notifsData: AppNotification[] = [];
       snapshot.forEach((doc) => notifsData.push({ ...doc.data(), id: doc.id } as AppNotification));
       setNotifications(notifsData);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, "notifications");
     });
 
     return () => {
       unsubscribeTickets();
-      unsubscribeAccounts();
       unsubscribeBranches();
       unsubscribeNotifs();
     };
-  }, []);
+  }, [db, currentUser]);
 
   const addNotification = useCallback(async (message: string, type: AppNotification['type'] = 'info', ticketId?: string) => {
     await addDoc(collection(db, "notifications"), {
@@ -364,19 +439,45 @@ const App: React.FC = () => {
 
   if (!currentUser) {
     return (
-      <Login 
-        onLogin={handleLogin} 
-        lang={lang} 
-        onSetLang={setLang}
-        theme={theme}
-        onSetTheme={setTheme}
-        t={t} 
-      />
+      <div className="relative min-h-screen">
+        {showInstallBanner && (
+          <div className="fixed top-0 left-0 right-0 z-[100] bg-orange-600 text-white p-3 flex justify-between items-center shadow-lg animate-fadeInDown">
+            <div className="flex items-center space-x-3 space-x-reverse">
+              <span className="text-2xl">📱</span>
+              <span className="text-xs font-bold">{lang === 'ar' ? 'تثبيت التطبيق لتجربة أفضل' : 'Install app for a better experience'}</span>
+            </div>
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <button onClick={handleInstallClick} className="bg-white text-orange-600 px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider">{lang === 'ar' ? 'تثبيت' : 'Install'}</button>
+              <button onClick={() => setShowInstallBanner(false)} className="p-1 text-white/60 hover:text-white">✕</button>
+            </div>
+          </div>
+        )}
+        <Login 
+          onLogin={handleLogin} 
+          lang={lang} 
+          onSetLang={setLang}
+          theme={theme}
+          onSetTheme={setTheme}
+          t={t} 
+        />
+      </div>
     );
   }
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
+      {showInstallBanner && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-orange-600 text-white p-3 flex justify-between items-center shadow-lg animate-fadeInDown">
+          <div className="flex items-center space-x-3 space-x-reverse">
+            <span className="text-2xl">📱</span>
+            <span className="text-xs font-bold">{lang === 'ar' ? 'تثبيت التطبيق لتجربة أفضل' : 'Install app for a better experience'}</span>
+          </div>
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <button onClick={handleInstallClick} className="bg-white text-orange-600 px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider">{lang === 'ar' ? 'تثبيت' : 'Install'}</button>
+            <button onClick={() => setShowInstallBanner(false)} className="p-1 text-white/60 hover:text-white">✕</button>
+          </div>
+        </div>
+      )}
       <Sidebar 
         currentView={view} 
         setView={handleViewChange} 

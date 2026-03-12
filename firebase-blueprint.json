@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "User Account",
+      "description": "User account information including credentials and roles.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["BRANCH_MANAGER", "OPERATION_MANAGER", "CEO"] },
+        "branch": { "type": "string" },
+        "password": { "type": "string" }
+      },
+      "required": ["id", "name", "role"]
+    },
+    "Ticket": {
+      "title": "Maintenance Ticket",
+      "description": "A maintenance request with workflow status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "branch": { "type": "string" },
+        "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "comments": { "type": "array" },
+        "attachmentUrl": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "media": { "type": "array" }
+      },
+      "required": ["id", "title", "branch", "status", "priority", "createdBy", "createdAt", "updatedAt"]
+    },
+    "AppNotification": {
+      "title": "App Notification",
+      "description": "System notifications for users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["success", "info", "warning", "error"] },
+        "timestamp": { "type": "number" },
+        "read": { "type": "boolean" },
+        "ticketId": { "type": "string" }
+      },
+      "required": ["id", "message", "type", "timestamp", "read"]
+    },
+    "Branch": {
+      "title": "Branch",
+      "description": "Branch information.",
+      "type": "object",
+      "properties": {
+        "name_ar": { "type": "string" }
+      },
+      "required": ["name_ar"]
+    }
+  },
+  "firestore": {
+    "accounts": {
+      "schema": "UserAccount",
+      "description": "Collection of user accounts."
+    },
+    "tickets": {
+      "schema": "Ticket",
+      "description": "Collection of maintenance tickets."
+    },
+    "notifications": {
+      "schema": "AppNotification",
+      "description": "Collection of system notifications."
+    },
+    "branches": {
+      "schema": "Branch",
+      "description": "Collection of branches."
+    }
+  }
+}

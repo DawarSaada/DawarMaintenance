@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: accounts
+    // Document ID: userId (string)
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - role: string (required, enum: BRANCH_MANAGER, OPERATION_MANAGER, CEO)
+    //   - branch: string (optional)
+    //   - password: string (optional)
+    //
+    // Collection: tickets
+    // Document ID: ticketId (string)
+    // Fields:
+    //   - id: string (required)
+    //   - title: string (required)
+    //   - description: string (required)
+    //   - branch: string (required)
+    //   - status: string (required)
+    //   - priority: string (required)
+    //   - createdBy: string (required)
+    //   - createdAt: number (required)
+    //   - updatedAt: number (required)
+    //   - comments: list (required)
+    //   - attachmentUrl: string (optional)
+    //   - assignedTo: string (optional)
+    //   - media: list (optional)
+    //
+    // Collection: notifications
+    // Document ID: notificationId (string)
+    // Fields:
+    //   - id: string (required)
+    //   - message: string (required)
+    //   - type: string (required, enum: success, info, warning, error)
+    //   - timestamp: number (required)
+    //   - read: bool (required)
+    //   - ticketId: string (optional)
+    //
+    // Collection: branches
+    // Document ID: branchId (string)
+    // Fields:
+    //   - name_ar: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Note: The current app uses a custom login system, not Firebase Auth.
+    // This makes it difficult to enforce per-user security via request.auth.
+    // We will allow access based on the app's logic for now, but this is a security risk.
+
+    function isValidUserAccount(data) {
+      return data.keys().hasAll(['id', 'name', 'role']) &&
+             data.id is string && data.name is string &&
+             data.role in ['BRANCH_MANAGER', 'OPERATION_MANAGER', 'CEO'] &&
+             (!('branch' in data) || data.branch is string) &&
+             (!('password' in data) || data.password is string);
+    }
+
+    function isValidTicket(data) {
+      return data.keys().hasAll(['id', 'title', 'branch', 'status', 'priority', 'createdBy', 'createdAt', 'updatedAt']) &&
+             data.id is string && data.title is string && data.title.size() < 200 &&
+             data.branch is string && data.status is string &&
+             data.priority in ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] &&
+             data.createdBy is string &&
+             data.createdAt is number && data.updatedAt is number &&
+             (!('comments' in data) || data.comments is list);
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'message', 'type', 'timestamp', 'read']) &&
+             data.id is string && data.message is string && data.message.size() < 500 &&
+             data.type in ['success', 'info', 'warning', 'error'] &&
+             data.timestamp is number && data.read is bool;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /accounts/{accountId} {
+      // Allow read for login process (Unauthenticated in current app design)
+      // WARNING: This exposes password hashes/strings if they are stored here.
+      allow read: if true;
+      allow create, update: if isValidUserAccount(request.resource.data);
+      allow delete: if false; // Protect accounts from deletion
+    }
+
+    match /tickets/{ticketId} {
+      // Allow read/write for now to fix permission errors.
+      // Ideally should be restricted to authenticated users.
+      allow read: if true; 
+      allow create: if isValidTicket(request.resource.data);
+      allow update: if isValidTicket(request.resource.data);
+      allow delete: if true; // App allows deletion
+    }
+
+    match /notifications/{notifId} {
+      allow read: if true;
+      allow create: if isValidNotification(request.resource.data);
+      allow update: if isValidNotification(request.resource.data);
+      allow delete: if true;
+    }
+
+    match /branches/{branchId} {
+      allow read: if true;
+      allow write: if true; // Admin can manage branches
+    }
+  }
+}

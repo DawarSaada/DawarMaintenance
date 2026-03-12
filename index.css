@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Custom styles can go here */
+body {
+  -webkit-tap-highlight-color: transparent;
+}
